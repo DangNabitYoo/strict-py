@@ -1,0 +1,19 @@
+PLACE 1 n1
+PLACE 1 n2
+
+SAY "0"
+SAY n1
+SAY n2
+
+
+DOGEAR FIB
+
+PLACE 0 nth
+ADD n1 n2 nth
+
+PLACE n1 n2
+PLACE nth n1
+SAY nth
+
+WAIT 1
+GOTO "FIB"
