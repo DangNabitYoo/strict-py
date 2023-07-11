@@ -12,7 +12,8 @@ array_list = {}
 curr_line = 0
 content_length = len(content) - 1
 return_lines = []
-
+uncaps = False
+debug = False
 
 def get_string(string):
     '''Just turns "Meow" into Meow'''
@@ -30,6 +31,14 @@ def move(num):
     curr_line += num
 
 
+def if_upper(text):
+    '''If META UNCAPS is on, make command uncap'''
+    global uncaps
+    if uncaps:
+        return text.upper()
+    return text
+
+
 def resolve(text):
     '''Smartly returns vars, strings, nums, and arrays'''
     global curr_line
@@ -40,7 +49,7 @@ def resolve(text):
         return int(text)
     elif text[0] == '$':
         var = text[1:]
-        match var:
+        match if_upper(var):
             case "LINE":
                 return curr_line
             case "TIME":
@@ -99,17 +108,14 @@ def reset_content():
 
 reset_content()
 
-while True and curr_line <= content_length:
+while curr_line <= content_length:
     command = split_quotes(content[curr_line])
-    try:
-        if sys.argv[2] == "-d":
-            '''If -d is supplied, do some debug stuff, yknow'''
-            print(f"vars:{var_list}")
-            print(f"Command:{command}")
-            print(f"Arrays:{array_list}")
-    except:
-        pass
-    match command[0]:
+    if debug:
+        '''Do some debug stuff, yknow'''
+        print(f"vars:{var_list}")
+        print(f"Command:{command}")
+        print(f"Arrays:{array_list}")
+    match if_upper(command[0]):
         case "PLACE":
             '''Set a variable'''
             value = command[1]
@@ -152,7 +158,7 @@ while True and curr_line <= content_length:
             first = resolve(command[2])
             second = resolve(command[3])
 
-            match command[1]:
+            match if_upper(command[1]):
                 case "EQ":
                     if first == second:
                         move(1)
@@ -198,8 +204,7 @@ while True and curr_line <= content_length:
         case "ADD":
             '''Add two numbers, put into a var'''
             try:
-                var_list[command[3]] = resolve(
-                    command[1]) + resolve(command[2])
+                var_list[command[3]] = resolve(command[1]) + resolve(command[2])
             except:
                 print(f"Could not add {command[1]} to {command[2]}")
                 quit(1)
@@ -208,8 +213,7 @@ while True and curr_line <= content_length:
         case "SUB":
             '''Subtract two numbers, put into a var'''
             try:
-                var_list[command[3]] = resolve(
-                    command[1]) - resolve(command[2])
+                var_list[command[3]] = resolve(command[1]) - resolve(command[2])
             except:
                 print(f"Could not subtract {command[2]} from {command[1]}")
                 quit(1)
@@ -286,7 +290,7 @@ while True and curr_line <= content_length:
             into either another variable type or makes a new thing.
             Maybe in the future I'll make custom types
             '''
-            match command[1]:
+            match if_upper(command[1]):
                 case "ARRAY":
                     array_list[command[2]] = []
 
@@ -300,7 +304,7 @@ while True and curr_line <= content_length:
         case "ARRAY":
             '''Change array stuff'''
             array = command[1]
-            match command[2]:
+            match if_upper(command[2]):
                 case "ADD":
                     array_list[array].append(resolve(command[3]))
 
@@ -338,9 +342,29 @@ while True and curr_line <= content_length:
                     del var_list[command[i]]
             move(1)
 
+        case "META":
+            match if_upper(command[1]):
+                case "DEBUG":
+                    match if_upper(command[2]):
+                        case "OFF":
+                            debug = False
+
+                        case _:
+                            debug = True
+
+                case "CAPS":
+                    uncaps = False
+
+                case "UNCAPS":
+                    uncaps = True
+
+                case _:
+                    pass
+            move(1)
+
         case "END":
             '''Terminate something'''
-            match command[1]:
+            match if_upper(command[1]):
                 case "PROGRAM":
                     quit(0)
 
